@@ -17,7 +17,7 @@ function App() {
   const renderContent = () => {
     switch (activeSection) {
       case 'agents':
-        return <ChatArea />;
+        return <div>Agents Content Coming Soon</div>;
       case 'planner':
         return <div>Planner Content Coming Soon</div>;
       case 'todo':
@@ -27,7 +27,7 @@ function App() {
       case 'settings':
         return <div>Settings Content Coming Soon</div>;
       default:
-        return <ChatArea />;
+        return <div>Agents Content Coming Soon</div>
     }
   };
 
