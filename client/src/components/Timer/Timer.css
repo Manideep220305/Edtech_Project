@@ -1,0 +1,76 @@
+.timer-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.timer-header h2 {
+  color: #2d3748;
+  margin-bottom: 2rem;
+}
+
+.timer-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.time {
+  font-size: 4rem;
+  font-weight: 700;
+  color: white;
+  font-family: 'Courier New', monospace;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.timer-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 100px;
+}
+
+.timer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timer-btn.start {
+  background: #48bb78;
+  color: white;
+}
+
+.timer-btn.start:hover:not(:disabled) {
+  background: #38a169;
+}
+
+.timer-btn.pause {
+  background: #ed8936;
+  color: white;
+}
+
+.timer-btn.pause:hover:not(:disabled) {
+  background: #dd7725;
+}
+
+.timer-btn.reset {
+  background: #e53e3e;
+  color: white;
+}
+
+.timer-btn.reset:hover {
+  background: #c53030;
+}
