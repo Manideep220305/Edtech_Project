@@ -103,7 +103,7 @@ const Login = () => {
 
         if (response.data.success) {
           login(response.data.user, response.data.token);
-          navigate('/');
+          navigate('/dashboard');
         }
       }
     } catch (error) {
