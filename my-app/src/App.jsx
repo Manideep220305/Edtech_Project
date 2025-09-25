@@ -7,7 +7,8 @@ import Planner from './components/Planner/Planner';
 import TodoList from './components/TodoList/TodoList';
 import Timer from './components/Timer/Timer';
 import './App.css';
-
+import ChatArea from './components/ChatArea/ChatArea';
+import GroupChatArea from './components/ChatArea/GroupChatArea';
 function App() {
   // The default active section is now 'planner'
   const [activeSection, setActiveSection] = useState('planner');
@@ -20,7 +21,7 @@ function App() {
   const renderContent = () => {
     switch (activeSection) {
       case 'agents':
-        return <div>Agents Content Coming Soon</div>;
+        return <GroupChatArea />;
       case 'planner':
         return <Planner />;
       case 'todo':
