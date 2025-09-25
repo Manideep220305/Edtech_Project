@@ -6,32 +6,53 @@ import { Server } from "socket.io";
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" }, // allow frontend to connect
+  cors: { origin: "*" }, // Allow frontend to connect
 });
 
-// Local in-memory DB
+// In-memory data stores
 let messages = [];
-let aiMessages = [];
+const availableUserNumbers = Array.from({ length: 100 }, (_, i) => i + 1); // A pool of numbers 1-100
+const userMap = new Map(); // Use a Map for better performance: socket.id -> { username, number }
 
-// Track usernames
-let availableUserNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // you can expand this
-let userMap = {}; // socket.id -> username
+// --- NEW: Function to broadcast the current list of online users ---
+const broadcastOnlineUsers = () => {
+  const onlineUsers = Array.from(userMap.values()).map(user => user.username);
+  io.emit("online-users", onlineUsers);
+  console.log("📢 Broadcasting online users:", onlineUsers);
+};
+
+// --- NEW: Function to handle AI queries ---
+const handleAiQuery = (originalMessage) => {
+  const { user, text } = originalMessage;
+  const query = text.substring(3).trim(); // Remove "@ai"
+
+  // Simulate AI thinking delay
+  setTimeout(() => {
+    const aiResponse = {
+      id: Date.now(),
+      user: "AI Assistant",
+      text: `Hello, ${user}. You asked me about "${query}". I am a simulated assistant, but I'm here to help!`,
+    };
+
+    messages.push(aiResponse);
+    io.emit("chat-message", aiResponse); // Broadcast AI response to everyone
+    console.log(`[AI Response] to ${user}: ${aiResponse.text}`);
+  }, 1500); // 1.5 second delay
+};
 
 io.on("connection", (socket) => {
   console.log("✅ New user connected:", socket.id);
 
-  // Assign username
-  let userNumber = availableUserNumbers.shift() || Date.now(); // fallback if too many users
-  let username = `User${userNumber}`;
-  userMap[socket.id] = { username, number: userNumber };
+  // 1. Assign a username
+  const userNumber = availableUserNumbers.shift() || Math.floor(Math.random() * 1000);
+  const username = `User${userNumber}`;
+  userMap.set(socket.id, { username, number: userNumber });
 
-  // Send chat history
+  // 2. Send history and the assigned username to the connected client
   socket.emit("chat-history", messages);
-  // After assigning username
   socket.emit("your-username", username);
 
-
-  // Notify everyone that user joined
+  // 3. Notify everyone else that a new user has joined
   const joinMsg = {
     id: Date.now(),
     user: "System",
@@ -40,41 +61,55 @@ io.on("connection", (socket) => {
   messages.push(joinMsg);
   io.emit("chat-message", joinMsg);
 
-  // Listen for chat messages
-  socket.on("chat-message", (msg) => {
+  // NEW: Update and broadcast the online user list
+  broadcastOnlineUsers();
+
+  // 4. Listen for new messages from this client
+  socket.on("chat-message", (msgText) => {
+    const senderUsername = userMap.get(socket.id)?.username;
+    if (!senderUsername) return; // Safety check
+
     const newMessage = {
       id: Date.now(),
-      user: username,
-      text: msg,
+      user: senderUsername,
+      text: msgText,
     };
 
     messages.push(newMessage);
-
-    if (msg.startsWith("@ai")) {
-      aiMessages.push(newMessage);
-      console.log(`[AI MESSAGE] ${username}: ${msg}`);
-    } else {
-      console.log(`[USER MESSAGE] ${username}: ${msg}`);
-    }
-
+    console.log(`[Message] ${senderUsername}: ${msgText}`);
+    
+    // Broadcast the original message to all connected clients
     io.emit("chat-message", newMessage);
+
+    // NEW: Check if the message is an AI command
+    if (msgText.trim().toLowerCase().startsWith("@ai")) {
+      handleAiQuery(newMessage);
+    }
   });
 
-  // Handle disconnect
+  // 5. Handle user disconnection
   socket.on("disconnect", () => {
-    const leftUser = userMap[socket.id];
-    if (leftUser) {
-      availableUserNumbers.push(leftUser.number); // free the number
+    const disconnectedUser = userMap.get(socket.id);
+    if (disconnectedUser) {
+      console.log(`❌ ${disconnectedUser.username} disconnected.`);
+      
+      // Add the user number back to the available pool
+      availableUserNumbers.unshift(disconnectedUser.number);
+      availableUserNumbers.sort((a, b) => a - b); // Keep the array sorted
+
       const leaveMsg = {
         id: Date.now(),
         user: "System",
-        text: `${leftUser.username} left the chat`,
+        text: `${disconnectedUser.username} left the chat`,
       };
       messages.push(leaveMsg);
       io.emit("chat-message", leaveMsg);
-      delete userMap[socket.id];
+      
+      userMap.delete(socket.id); // Clean up the map
+
+      // NEW: Update and broadcast the online user list
+      broadcastOnlineUsers();
     }
-    console.log("❌ User disconnected:", socket.id);
   });
 });
 
