@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 // Initialize socket connection outside the component
-const socket = io("http://localhost:3000");
+// Don't auto-connect yet; we'll connect after listeners are ready
+const socket = io("http://localhost:3000", { autoConnect: false });
+
 
 const GroupChatArea = () => {
   const [messages, setMessages] = useState([]);
@@ -15,11 +17,19 @@ const GroupChatArea = () => {
 
   useEffect(() => {
     socket.on("your-username", (name) => setUsername(name));
-    socket.on("chat-history", (history) => setMessages(history));
+    socket.on("chat-history", (history) => {
+      setMessages((prev) => {
+      // Prevent duplicates by keeping existing + new (history is full list)
+      const unique = [...history]; 
+      return unique;
+    });
+});
+
     socket.on("chat-message", (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
     socket.on("online-users", (users) => setOnlineUsers(users));
+    if (!socket.connected) socket.connect();
 
     return () => {
       socket.off("your-username");
@@ -88,6 +98,10 @@ const GroupChatArea = () => {
     .chat-header { padding:1.5rem; border-bottom:1px solid #e5e7eb; text-align:center; background:#f9fafb; }
     .chat-header h1 { font-size:1.5rem; font-weight:700; color:#1f2937; margin:0; }
     .chat-header p { font-size:0.875rem; color:#6b7280; margin:0.25rem 0 0; }
+    .chat-messages { flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
     .online-users { font-size:0.8rem; color:#4b5563; margin-top:0.5rem; }
     .message-wrapper { display:flex; margin-bottom:1rem; flex-direction: column; }
     .message-wrapper.user { align-items:flex-end; }
@@ -137,7 +151,7 @@ const GroupChatArea = () => {
             const showSender = !isSelf && !isSystem;
 
             return (
-              <div key={msg.id || index} className={`message-wrapper ${isSelf ? 'user' : 'other'}`}>
+              <div key={msg._id || index} className={`message-wrapper ${isSelf ? 'user' : 'other'}`}>
                   {showSender && <div className="message-sender">{msg.user}</div>}
                   <div className={`message ${role}`}>
                     {/* 👇 START OF CHANGES */}
