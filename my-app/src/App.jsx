@@ -1,13 +1,16 @@
+// src/App.jsx
+
 import React, { useState } from 'react';
 import Header from './components/Header/Header';
 import Sidebar from './components/Sidebar/Sidebar';
-import ChatArea from './components/ChatArea/ChatArea';
+import Planner from './components/Planner/Planner'; 
 import TodoList from './components/TodoList/TodoList';
 import Timer from './components/Timer/Timer';
 import './App.css';
 
 function App() {
-  const [activeSection, setActiveSection] = useState('agents');
+  // The default active section is now 'planner'
+  const [activeSection, setActiveSection] = useState('planner');
   const [todos, setTodos] = useState([
     { id: 1, text: 'Research APIs', completed: false },
     { id: 2, text: 'Design database schema', completed: false },
@@ -19,7 +22,7 @@ function App() {
       case 'agents':
         return <div>Agents Content Coming Soon</div>;
       case 'planner':
-        return <div>Planner Content Coming Soon</div>;
+        return <Planner />;
       case 'todo':
         return <TodoList todos={todos} setTodos={setTodos} />;
       case 'timer':
@@ -27,7 +30,8 @@ function App() {
       case 'settings':
         return <div>Settings Content Coming Soon</div>;
       default:
-        return <div>Agents Content Coming Soon</div>
+        // Changed default to planner as well for consistency
+        return <Planner />;
     }
   };
 

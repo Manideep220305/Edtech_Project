@@ -1,14 +1,29 @@
+/* src/components/Header/Header.css */
+
 .header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 1rem 2rem;
+  padding: 0 2rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  
+  /* --- These properties make the header constant --- */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px; /* A fixed height is crucial */
+  z-index: 1000; /* This ensures it stays on top of other content */
+  
+  /* Helper styles to center content vertically */
+  display: flex;
+  align-items: center;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 }
